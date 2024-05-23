@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+bcrypt
+psycopg2
+python-jose
+sendgrid
+fastapi-mail
+python-dotenv
