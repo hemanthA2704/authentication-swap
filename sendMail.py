@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import  Depends, BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from pydantic import EmailStr
-from schemas import mail_settings
+from schemas import mail_settings , composeMail
 
-router = APIRouter() 
 
 conf = ConnectionConfig(
     MAIL_USERNAME=mail_settings.MAIL_USERNAME,
@@ -16,13 +15,14 @@ conf = ConnectionConfig(
     USE_CREDENTIALS=mail_settings.USE_CREDENTIALS,
     VALIDATE_CERTS=mail_settings.VALIDATE_CERTS,
 )
-@router.post("/send-email/")
-async def send_email(background_tasks: BackgroundTasks, email: EmailStr):
+
+
+async def send_email(background_tasks: BackgroundTasks, compose ):
     message = MessageSchema(
-        subject="FastAPI-Mail module",
-        recipients=[email],  # List of recipients
-        body="This is a test email from FastAPI",
-        subtype="plain"
+        subject=compose["subject"],
+        recipients=[compose["email"]],  # List of recipients
+        body=compose["remark"],
+        subtype="html"
     )
     
     fm = FastMail(conf)

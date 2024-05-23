@@ -16,4 +16,4 @@ class Registration(Base):
     rgdno = Column(Integer,nullable=False)
     email = Column(String,nullable=False)
     org = Column(String,nullable=False)
-    approved = Column(Boolean,nullable=False)
+    approved = Column(Boolean)

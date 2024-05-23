@@ -7,3 +7,4 @@ python-jose
 sendgrid
 fastapi-mail
 python-dotenv
+jinja2

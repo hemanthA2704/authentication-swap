@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .container {
+            width: 100%;
+            padding: 20px;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+        .content {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .footer {
+            background-color: #ddd;
+            color: #555;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        h1, h2, h3 {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding-bottom: 10px;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            margin: 0;
+            padding-bottom: 10px;
+        }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to FastAPI-Mail</h1>
+        </div>
+        <div class="content">
+            <h2>Dear user,</h2>
+            <p>{{remark}}</p>
+            <p>If you have any questions, feel free to <a href="mailto:info@jivandeep.org">contact us</a>.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 JIVANDEEP. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

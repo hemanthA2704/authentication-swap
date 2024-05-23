@@ -29,7 +29,7 @@ class Details(BaseModel):
 class AdminValidation(BaseModel):
     user_id: str
     is_valid: bool
-
+    remark : str | None = None
 from pydantic_settings import BaseSettings
 
 class MailSettings(BaseSettings):
@@ -48,3 +48,12 @@ class MailSettings(BaseSettings):
 
 mail_settings = MailSettings()
 
+class passwordChange(BaseModel):
+    password : str
+
+
+class composeMail(BaseModel):
+    email : EmailStr
+    subject : str
+    remark : str
+    

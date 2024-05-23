@@ -1,4 +1,4 @@
-from fastapi import FastAPI , Depends , HTTPException ,status,File, UploadFile , Response , Form 
+from fastapi import FastAPI , Depends , HTTPException ,status,File, UploadFile , Response , Form , BackgroundTasks
 from fastapi.responses import HTMLResponse
 from pydantic import EmailStr
 from datetime import timedelta
@@ -12,15 +12,18 @@ import shutil
 import os
 import auth
 from uuid import uuid4
-from sendMail import router as mail
+from sendMail import send_email
+from mailBody import body
+
+
+
+
 
 app = FastAPI()
 
 
 models.Base.metadata.create_all(bind=engine)
 
-
-app.include_router(mail)
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -76,7 +79,7 @@ async def main():
     content = """
 <body>
 <form action="/upload" enctype="multipart/form-data" method="post">
-<input name="file" type="file">
+<input name="text" type="text">
 <input type="submit">
 </form>
 </body>
@@ -101,7 +104,7 @@ async def upload_file(details: schemas.Details = Depends(get_details),
     file_location = f"{UPLOAD_DIRECTORY}/{user_id}_{file.filename}" 
     with open(file_location, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    user = models.Registration(name=details.name ,user_id=user_id,rgdno=details.rgdno,email=details.email,org=details.org,approved=False)
+    user = models.Registration(name=details.name ,user_id=user_id,rgdno=details.rgdno,email=details.email,org=details.org,approved=None)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -110,7 +113,8 @@ async def upload_file(details: schemas.Details = Depends(get_details),
 # current_user: schemas.User = Depends(auth.get_current_user )
 @app.post("/admin/validate")
 async def validate_user( data: schemas.AdminValidation,
-                         db:Session = Depends(get_db) ):
+                         background_tasks: BackgroundTasks,
+                         db:Session = Depends(get_db)):
     user = db.query(models.Registration).filter(models.Registration.user_id==data.user_id).first()
     # if current_user != "admin":
     #     raise HTTPException(
@@ -124,14 +128,32 @@ async def validate_user( data: schemas.AdminValidation,
     if data.is_valid:
         username = f"user_{data.user_id[:8]}"
         password = f"pass_{data.user_id[:8]}"
-        newUser = models.User(username=username,password=password)
-        email=user.email
+        newUser = models.User(username=username,password=Hash.hash_password(password))
+        remark = f"You are succesfully registered in Jivandeep. Your username : {username} and password : {password}. Kindly login to your account and change the credentials . ThankYOU!!"
+        await send_email(background_tasks,{"email" : user.email,
+            "subject" : "Successful registration in jivandeep.",
+            "remark" : body(remark)}
+            )
         user.approved=True
         db.add(newUser)
         db.commit()
         db.refresh(newUser)
         return {"username": username, "password": password, "message": "User validated successfully"}
     else:
-        db.delete(user)
+        user.approved=False
         db.commit()
+        await send_email(background_tasks,{"email" : user.email,
+                                           "subject" : "Registration unsuccessful.",
+                                           "remark" : data.remark})
         return {"message": "User data invalid. Registration rejected."}
+
+@app.post("/changePassword")
+def change(request : schemas.passwordChange,current_user: schemas.User = Depends(auth.get_current_user) ,db:Session = Depends(get_db)):
+    user=db.query(models.User).filter(models.User.username==request.username).first()
+    user.password=request.password
+    db.commit()
+
+@app.get("/logout")
+async def logout(response: Response):
+    response.delete_cookie("token")
+    return {"msg": "Successfully logged out"}
